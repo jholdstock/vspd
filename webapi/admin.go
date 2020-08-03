@@ -61,7 +61,24 @@ func walletStatus(c *gin.Context) map[string]WalletStatus {
 // statusJSON is the handler for "GET /admin/status". It returns a JSON object
 // describing the current status of voting wallets.
 func statusJSON(c *gin.Context) {
-	c.AbortWithStatusJSON(http.StatusOK, walletStatus(c))
+	httpStatus := http.StatusOK
+
+	wallets := walletStatus(c)
+
+	// Respond with HTTP status 500 if any voting wallets have issues.
+	for _, wallet := range wallets {
+		if wallet.InfoError ||
+			wallet.BestBlockError ||
+			!wallet.Connected ||
+			!wallet.DaemonConnected ||
+			!wallet.Voting ||
+			!wallet.Unlocked {
+			httpStatus = http.StatusInternalServerError
+			break
+		}
+	}
+
+	c.AbortWithStatusJSON(httpStatus, wallets)
 }
 
 // adminPage is the handler for "GET /admin".

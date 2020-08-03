@@ -77,6 +77,24 @@ dcrstakepool deployment.
 
 ## Monitoring
 
+A monitoring system with alerting should be pointed at vspd and tested/verified
+to be operating properly. An ideal solution would monitor the following:
+
+**Front-end host:**
+
+- vspd and dcrd processes are running.
+- No errors in vspd or dcrd logs.
+- Both dcrd and vspd are keeping up to date with new blocks.
+- Web front-end is accessible from the internet.
+- vspd `/admin/status` endpoint indicates no issues.
+
+**Voting wallet hosts:**
+
+- dcrwallet and dcrd processes are running.
+- No errors in dcrwallet or dcrd logs.
+- dcrwallet has voting enabled and is unlocked.
+- Both dcrd and dcrwallet are keeping up to date with new blocks.
+
 ### Logs
 
 Any event logged at the `[ERR]` level is worthy of immediate investigation.
@@ -87,11 +105,18 @@ The `[WRN]` level is used to indicate events which are of interest, but do not
 necessarily require investigation (eg. bad requests from clients, recoverable
 errors).
 
-### Voting Wallets
+### Voting Wallet Status
 
 The current status of the voting wallets is displayed in a table on the `/admin`
 page, and the same information can be retrieved as a JSON object from
-`/admin/status` for automated monitoring.
+`/admin/status` for automated monitoring. This endpoint requires Basic HTTP
+Authentication with the username "admin" and the password set in vspd
+configuration. A 200 HTTP status will be returned if the voting wallets seem
+healthy, or a 500 status will be used to indicate something is wrong.
+
+```bash
+$ curl --user admin:12345 --request GET http://localhost:8800/admin/status
+```
 
 ```json
 {
@@ -108,20 +133,6 @@ page, and the same information can be retrieved as a JSON object from
     }
 }
 ```
-
-<!-- 
-
-// TODO: Content copied from dcrstakepool repo, should be updated for vspd when we have a
-suitable HTTP endpoint:
-
-  A monitoring system with alerting should be pointed at dcrstakepool and
-  tested/verified to be operating properly. There is a hidden /status page which
-  throws 500 if the RPC client is shutdown. If your monitoring system supports it,
-  add additional points of verification such as: checking that the /stats page
-  loads and has expected information in it, create a test account and setup
-  automated login testing, etc.
-
--->
 
 ## Backup
 
