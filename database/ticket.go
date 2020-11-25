@@ -190,6 +190,29 @@ func (vdb *VspDatabase) GetTicketByHash(ticketHash string) (Ticket, bool, error)
 	return ticket, found, err
 }
 
+func (vdb *VspDatabase) GetTicketsWithMissingPurchaseHeight() ([]Ticket, error) {
+	var tickets []Ticket
+	err := vdb.db.View(func(tx *bolt.Tx) error {
+		ticketBkt := tx.Bucket(vspBktK).Bucket(ticketBktK)
+
+		return ticketBkt.ForEach(func(k, v []byte) error {
+			var ticket Ticket
+			err := json.Unmarshal(v, &ticket)
+			if err != nil {
+				return fmt.Errorf("could not unmarshal ticket: %v", err)
+			}
+
+			if ticket.PurchaseHeight == 0 {
+				tickets = append(tickets, ticket)
+			}
+
+			return nil
+		})
+	})
+
+	return tickets, err
+}
+
 func (vdb *VspDatabase) CountTickets() (int64, int64, int64, error) {
 	defer vdb.ticketsMtx.RUnlock()
 	vdb.ticketsMtx.RLock()

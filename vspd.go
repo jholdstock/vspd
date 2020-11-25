@@ -83,6 +83,35 @@ func run(ctx context.Context) error {
 	wallets := rpc.SetupWallet(cfg.walletUsers, cfg.walletPasswords, cfg.walletHosts, cfg.walletCerts)
 	defer wallets.Close()
 
+	tickets, err := db.GetTicketsWithMissingPurchaseHeight()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	client, err := dcrd.Client(ctx, cfg.netParams.Params)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	for _, ticket := range tickets {
+		rawTx, err := client.GetRawTransaction(ticket.Hash)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		log.Debugf("Adding purchase height %d for ticket %s",
+			rawTx.BlockHeight, ticket.Hash)
+		ticket.PurchaseHeight = rawTx.BlockHeight
+		db.UpdateTicket(ticket)
+	}
+
+	// Exit.
+	log.Infof("Missing purchase height added for %d tickets. Exiting.", len(tickets))
+	return nil
+
 	// Create and start webapi server.
 	apiCfg := webapi.Config{
 		VSPFee:               cfg.VSPFee,
