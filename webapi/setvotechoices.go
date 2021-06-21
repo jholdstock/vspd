@@ -92,12 +92,58 @@ func setVoteChoices(c *gin.Context) {
 		}
 	}
 
+	// Validate vote choices (consensus, tspend policy and treasury policy).
+
 	err = validConsensusVoteChoices(cfg.NetParams, currentVoteVersion(cfg.NetParams), request.VoteChoices)
 	if err != nil {
 		log.Warnf("%s: Invalid consensus vote choices (clientIP=%s, ticketHash=%s): %v",
 			funcName, c.ClientIP(), ticket.Hash, err)
 		sendErrorWithMsg(err.Error(), errInvalidVoteChoices, c)
 		return
+	}
+
+	err = validTreasuryPolicy(request.TreasuryPolicy)
+	if err != nil {
+		log.Warnf("%s: Invalid treasury policy (clientIP=%s, ticketHash=%s): %v",
+			funcName, c.ClientIP(), ticket.Hash, err)
+		sendErrorWithMsg(err.Error(), errInvalidVoteChoices, c)
+	}
+
+	err = validTSpendPolicy(request.TSpendPolicy)
+	if err != nil {
+		log.Warnf("%s: Invalid tspend policy (clientIP=%s, ticketHash=%s): %v",
+			funcName, c.ClientIP(), ticket.Hash, err)
+		sendErrorWithMsg(err.Error(), errInvalidVoteChoices, c)
+	}
+
+	// TSpendPolicy is optional, so only run this if provided.
+	var tSpendToDelete []string
+	if len(request.TSpendPolicy) > 0 {
+		// Find any TSpendPolicies which need to be removed from voting wallets
+		// - i.e. any policies which are set in the database but are not
+		// included in the request.
+		for k := range ticket.TSpendPolicy {
+			if _, ok := request.TSpendPolicy[k]; !ok {
+				tSpendToDelete = append(tSpendToDelete, k)
+			}
+		}
+
+		ticket.TSpendPolicy = request.TSpendPolicy
+	}
+
+	// TreasuryPolicy is optional, so only run this if provided.
+	var treasuryToDelete []string
+	if len(request.TreasuryPolicy) > 0 {
+		// Find any TreasuryPolicies which need to be removed from voting wallets
+		// - i.e. any policies which are set in the database but are not
+		// included in the request.
+		for k := range ticket.TreasuryPolicy {
+			if _, ok := request.TreasuryPolicy[k]; !ok {
+				treasuryToDelete = append(treasuryToDelete, k)
+			}
+		}
+
+		ticket.TreasuryPolicy = request.TreasuryPolicy
 	}
 
 	// Update VoteChoices in the database before updating the wallets. DB is the
@@ -129,6 +175,41 @@ func setVoteChoices(c *gin.Context) {
 				}
 			}
 
+			// Remove any outdated tspend policies.
+			for _, tspend := range tSpendToDelete {
+				err = walletClient.RemoveTSpendPolicy(tspend, ticket.Hash)
+				if err != nil {
+					log.Errorf("%s: dcrwallet.RemoveTSpendPolicy failed (wallet=%s, ticketHash=%s): %v",
+						funcName, walletClient.String(), ticket.Hash, err)
+				}
+			}
+
+			// Update tspend policy.
+			for tspend, policy := range request.TSpendPolicy {
+				err = walletClient.SetTSpendPolicy(tspend, policy, ticket.Hash)
+				if err != nil {
+					log.Errorf("%s: dcrwallet.SetTSpendPolicy failed (wallet=%s, ticketHash=%s): %v",
+						funcName, walletClient.String(), ticket.Hash, err)
+				}
+			}
+
+			// Remove any outdated treasury policies.
+			for _, treasury := range treasuryToDelete {
+				err = walletClient.RemoveTreasuryPolicy(treasury, ticket.Hash)
+				if err != nil {
+					log.Errorf("%s: dcrwallet.RemoveTreasuryPolicy failed (wallet=%s, ticketHash=%s): %v",
+						funcName, walletClient.String(), ticket.Hash, err)
+				}
+			}
+
+			// Update treasury policy.
+			for key, policy := range request.TreasuryPolicy {
+				err = walletClient.SetTreasuryPolicy(key, policy, ticket.Hash)
+				if err != nil {
+					log.Errorf("%s: dcrwallet.SetTreasuryPolicy failed (wallet=%s, ticketHash=%s): %v",
+						funcName, walletClient.String(), ticket.Hash, err)
+				}
+			}
 		}
 	}
 

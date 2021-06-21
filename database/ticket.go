@@ -51,6 +51,8 @@ var (
 	confirmedK         = []byte("Confirmed")
 	votingWIFK         = []byte("VotingWIF")
 	voteChoicesK       = []byte("VoteChoices")
+	tSpendPolicyK      = []byte("TSpendPolicy")
+	treasuryPolicyK    = []byte("TreasuryPolicy")
 	feeTxHexK          = []byte("FeeTxHex")
 	feeTxHashK         = []byte("FeeTxHash")
 	feeTxStatusK       = []byte("FeeTxStatus")
@@ -72,9 +74,11 @@ type Ticket struct {
 	// VotingWIF is set in /payfee.
 	VotingWIF string
 
-	// VoteChoices is initially set in /payfee, but can be updated in
-	// /setvotechoices.
-	VoteChoices map[string]string
+	// VoteChoices, TSpendPolicy and TreasuryPolicy are initially set in
+	// /payfee, but can be updated in /setvotechoices.
+	VoteChoices    map[string]string
+	TSpendPolicy   map[string]string
+	TreasuryPolicy map[string]string
 
 	// FeeTxHex and FeeTxHash will be set when the fee tx has been received.
 	FeeTxHex  string
@@ -176,6 +180,22 @@ func putTicketInBucket(bkt *bolt.Bucket, ticket Ticket) error {
 		return err
 	}
 
+	jsonTSpend, err := json.Marshal(ticket.TSpendPolicy)
+	if err != nil {
+		return err
+	}
+	if err = bkt.Put(tSpendPolicyK, jsonTSpend); err != nil {
+		return err
+	}
+
+	jsonTreasury, err := json.Marshal(ticket.TreasuryPolicy)
+	if err != nil {
+		return err
+	}
+	if err = bkt.Put(treasuryPolicyK, jsonTreasury); err != nil {
+		return err
+	}
+
 	jsonVoteChoices, err := json.Marshal(ticket.VoteChoices)
 	if err != nil {
 		return err
@@ -204,6 +224,18 @@ func getTicketFromBkt(bkt *bolt.Bucket) (Ticket, error) {
 
 	ticket.VoteChoices = make(map[string]string)
 	err := json.Unmarshal(bkt.Get(voteChoicesK), &ticket.VoteChoices)
+	if err != nil {
+		return ticket, err
+	}
+
+	ticket.TSpendPolicy = make(map[string]string)
+	err = json.Unmarshal(bkt.Get(tSpendPolicyK), &ticket.TSpendPolicy)
+	if err != nil {
+		return ticket, err
+	}
+
+	ticket.TreasuryPolicy = make(map[string]string)
+	err = json.Unmarshal(bkt.Get(treasuryPolicyK), &ticket.TreasuryPolicy)
 	if err != nil {
 		return ticket, err
 	}

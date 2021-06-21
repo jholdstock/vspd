@@ -235,6 +235,22 @@
                                             </td>
                                         </tr>
                                         <tr>
+                                            <th>TSpend Policy</th>
+                                            <td>
+                                                {{ range $key, $value := .Ticket.TSpendPolicy }}
+                                                    {{ $key }}: {{ $value }} <br />
+                                                {{ end }}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>Treasury Policy</th>
+                                            <td>
+                                                {{ range $key, $value := .Ticket.TreasuryPolicy }}
+                                                    {{ $key }}: {{ $value }} <br />
+                                                {{ end }}
+                                            </td>
+                                        </tr>
+                                        <tr>
                                             <th>
                                                 Vote Choice Changes<br />
                                                 <em>({{ .MaxVoteChanges }} most recent)</em>

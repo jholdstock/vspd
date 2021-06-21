@@ -41,5 +41,7 @@ func ticketStatus(c *gin.Context) {
 		FeeTxStatus:     string(ticket.FeeTxStatus),
 		FeeTxHash:       ticket.FeeTxHash,
 		VoteChoices:     ticket.VoteChoices,
+		TreasuryPolicy:  ticket.TreasuryPolicy,
+		TSpendPolicy:    ticket.TSpendPolicy,
 	}, c)
 }

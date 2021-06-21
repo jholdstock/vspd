@@ -231,6 +231,25 @@ func blockConnected() {
 						}
 					}
 				}
+
+				// Set tspend policy on voting wallets.
+				for tspend, policy := range ticket.TSpendPolicy {
+					err = walletClient.SetTSpendPolicy(tspend, policy, ticket.Hash)
+					if err != nil {
+						log.Errorf("%s: dcrwallet.SetTSpendPolicy failed (wallet=%s, ticketHash=%s): %v",
+							funcName, walletClient.String(), ticket.Hash, err)
+					}
+				}
+
+				// Set treasury policy on voting wallets.
+				for key, policy := range ticket.TreasuryPolicy {
+					err = walletClient.SetTreasuryPolicy(key, policy, ticket.Hash)
+					if err != nil {
+						log.Errorf("%s: dcrwallet.SetTreasuryPolicy failed (wallet=%s, ticketHash=%s): %v",
+							funcName, walletClient.String(), ticket.Hash, err)
+					}
+				}
+
 				log.Infof("%s: Ticket added to voting wallet (wallet=%s, ticketHash=%s)",
 					funcName, walletClient.String(), ticket.Hash)
 			}
@@ -549,6 +568,10 @@ func checkWalletConsistency() {
 					}
 				}
 			}
+
+			// TODO.
+			// Check if tspend policy matches.
+			// Check if treasury policy matches.
 		}
 	}
 }

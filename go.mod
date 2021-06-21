@@ -8,6 +8,7 @@ require (
 	github.com/decred/dcrd/blockchain/v4 v4.0.0-20210614170455-a72516b93b26
 	github.com/decred/dcrd/chaincfg/chainhash v1.0.3-0.20210525214639-70483c835b7f
 	github.com/decred/dcrd/chaincfg/v3 v3.0.1-0.20210525214639-70483c835b7f
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.0-20210525214639-70483c835b7f
 	github.com/decred/dcrd/dcrutil/v4 v4.0.0-20210614170455-a72516b93b26
 	github.com/decred/dcrd/hdkeychain/v3 v3.0.1-0.20210525214639-70483c835b7f
 	github.com/decred/dcrd/rpc/jsonrpc/types/v3 v3.0.0-20210614170455-a72516b93b26

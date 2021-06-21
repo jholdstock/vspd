@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Decred developers
+// Copyright (c) 2020-2021 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -36,11 +36,13 @@ type feeAddressResponse struct {
 }
 
 type payFeeRequest struct {
-	Timestamp   int64             `json:"timestamp" binding:"required"`
-	TicketHash  string            `json:"tickethash" binding:"required"`
-	FeeTx       string            `json:"feetx" binding:"required"`
-	VotingKey   string            `json:"votingkey" binding:"required"`
-	VoteChoices map[string]string `json:"votechoices" binding:"required"`
+	Timestamp      int64             `json:"timestamp" binding:"required"`
+	TicketHash     string            `json:"tickethash" binding:"required"`
+	FeeTx          string            `json:"feetx" binding:"required"`
+	VotingKey      string            `json:"votingkey" binding:"required"`
+	VoteChoices    map[string]string `json:"votechoices" binding:"required"`
+	TSpendPolicy   map[string]string `json:"tspendpolicy" binding:"max=3"`
+	TreasuryPolicy map[string]string `json:"treasurypolicy" binding:"max=3"`
 }
 
 type payFeeResponse struct {
@@ -49,9 +51,11 @@ type payFeeResponse struct {
 }
 
 type setVoteChoicesRequest struct {
-	Timestamp   int64             `json:"timestamp" binding:"required"`
-	TicketHash  string            `json:"tickethash" binding:"required"`
-	VoteChoices map[string]string `json:"votechoices" binding:"required"`
+	Timestamp      int64             `json:"timestamp" binding:"required"`
+	TicketHash     string            `json:"tickethash" binding:"required"`
+	VoteChoices    map[string]string `json:"votechoices" binding:"required"`
+	TSpendPolicy   map[string]string `json:"tspendpolicy" binding:"max=3"`
+	TreasuryPolicy map[string]string `json:"treasurypolicy" binding:"max=3"`
 }
 
 type setVoteChoicesResponse struct {
@@ -69,5 +73,7 @@ type ticketStatusResponse struct {
 	FeeTxStatus     string            `json:"feetxstatus"`
 	FeeTxHash       string            `json:"feetxhash"`
 	VoteChoices     map[string]string `json:"votechoices"`
+	TSpendPolicy    map[string]string `json:"tspendpolicy"`
+	TreasuryPolicy  map[string]string `json:"treasurypolicy"`
 	Request         []byte            `json:"request"`
 }

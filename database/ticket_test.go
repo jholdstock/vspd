@@ -38,6 +38,8 @@ func exampleTicket() Ticket {
 		FeeExpiration:     4,
 		Confirmed:         false,
 		VoteChoices:       map[string]string{"AgendaID": "yes"},
+		TSpendPolicy:      map[string]string{randString(33, hexCharset): "no"},
+		TreasuryPolicy:    map[string]string{randString(64, hexCharset): "abstain"},
 		VotingWIF:         randString(53, addrCharset),
 		FeeTxHex:          randString(504, hexCharset),
 		FeeTxHash:         randString(64, hexCharset),
@@ -133,6 +135,8 @@ func testGetTicketByHash(t *testing.T) {
 		retrieved.FeeExpiration != ticket.FeeExpiration ||
 		retrieved.Confirmed != ticket.Confirmed ||
 		!reflect.DeepEqual(retrieved.VoteChoices, ticket.VoteChoices) ||
+		!reflect.DeepEqual(retrieved.TSpendPolicy, ticket.TSpendPolicy) ||
+		!reflect.DeepEqual(retrieved.TreasuryPolicy, ticket.TreasuryPolicy) ||
 		retrieved.VotingWIF != ticket.VotingWIF ||
 		retrieved.FeeTxHex != ticket.FeeTxHex ||
 		retrieved.FeeTxHash != ticket.FeeTxHash ||

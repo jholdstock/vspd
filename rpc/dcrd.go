@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	requiredDcrdVersion = semver{Major: 6, Minor: 1, Patch: 2}
+	requiredDcrdVersion = semver{Major: 7, Minor: 0, Patch: 0}
 )
 
 // These error codes are defined in dcrd/dcrjson. They are copied here so we

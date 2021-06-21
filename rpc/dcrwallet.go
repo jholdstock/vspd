@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Decred developers
+// Copyright (c) 2020-2021 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -218,4 +218,46 @@ func (c *WalletRPC) TicketInfo(startHeight int64) (map[string]*wallettypes.Ticke
 // from the specified block height.
 func (c *WalletRPC) RescanFrom(fromHeight int64) error {
 	return c.Call(c.ctx, "rescanwallet", nil, fromHeight)
+}
+
+// SetTreasuryPolicy TODO
+func (c *WalletRPC) SetTreasuryPolicy(key, policy, ticket string) error {
+	return c.Call(c.ctx, "settreasurypolicy", nil, key, policy, ticket)
+}
+
+// SetTSpendPolicy TODO
+func (c *WalletRPC) SetTSpendPolicy(tSpend, policy, ticket string) error {
+	return c.Call(c.ctx, "settspendpolicy", nil, tSpend, policy, ticket)
+}
+
+// RemoveTreasuryPolicy TODO
+func (c *WalletRPC) RemoveTreasuryPolicy(key, ticket string) error {
+	return c.SetTreasuryPolicy(key, "abstain", ticket)
+}
+
+// RemoveTSpendPolicy TODO
+func (c *WalletRPC) RemoveTSpendPolicy(tSpend, ticket string) error {
+	return c.SetTSpendPolicy(tSpend, "abstain", ticket)
+}
+
+// TreasuryPolicy TODO
+func (c *WalletRPC) TreasuryPolicy(key, ticket string) (string, error) {
+	var policy string
+	err := c.Call(c.ctx, "treasurypolicy", nil, key, ticket, &policy)
+	if err != nil {
+		return "", err
+	}
+
+	return policy, nil
+}
+
+// TSpendPolicy TODO
+func (c *WalletRPC) TSpendPolicy(tSpend, ticket string) (string, error) {
+	var policy string
+	err := c.Call(c.ctx, "tspendpolicy", nil, tSpend, ticket, &policy)
+	if err != nil {
+		return "", err
+	}
+
+	return policy, nil
 }

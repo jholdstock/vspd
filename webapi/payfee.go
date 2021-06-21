@@ -107,6 +107,22 @@ func payFee(c *gin.Context) {
 			funcName, c.ClientIP(), ticket.Hash, err)
 	}
 
+	validTreasuryVote := true
+	err = validTreasuryPolicy(request.TreasuryPolicy)
+	if err != nil {
+		validTreasuryVote = false
+		log.Warnf("%s: Invalid treasury policy (clientIP=%s, ticketHash=%s): %v",
+			funcName, c.ClientIP(), ticket.Hash, err)
+	}
+
+	validTSpendVote := true
+	err = validTSpendPolicy(request.TSpendPolicy)
+	if err != nil {
+		validTSpendVote = false
+		log.Warnf("%s: Invalid tspend policy (clientIP=%s, ticketHash=%s): %v",
+			funcName, c.ClientIP(), ticket.Hash, err)
+	}
+
 	// Validate FeeTx.
 	feeTx, err := decodeTransaction(request.FeeTx)
 	if err != nil {
@@ -209,6 +225,14 @@ func payFee(c *gin.Context) {
 
 	if validVoteChoices {
 		ticket.VoteChoices = request.VoteChoices
+	}
+
+	if validTSpendVote {
+		ticket.TSpendPolicy = request.TSpendPolicy
+	}
+
+	if validTreasuryVote {
+		ticket.TreasuryPolicy = request.TreasuryPolicy
 	}
 
 	err = db.UpdateTicket(ticket)
