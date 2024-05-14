@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022 The Decred developers
+// Copyright (c) 2020-2024 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -91,7 +91,7 @@ func TestDatabase(t *testing.T) {
 	for testName, test := range tests {
 
 		// Create a new blank database for each sub-test.
-		err := CreateNew(testDb, feeXPub, log)
+		err := CreateNew(testDb, feeXPub)
 		if err != nil {
 			t.Fatalf("error creating test database: %v", err)
 		}

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 The Decred developers
+// Copyright (c) 2021-2024 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -73,7 +73,7 @@ func TestMain(m *testing.M) {
 	os.Remove(testDb)
 
 	// Create a new blank database for all tests.
-	err := database.CreateNew(testDb, feeXPub, log)
+	err := database.CreateNew(testDb, feeXPub)
 	if err != nil {
 		panic(fmt.Errorf("error creating test database: %w", err))
 	}
