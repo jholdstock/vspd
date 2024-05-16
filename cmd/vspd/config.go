@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023 The Decred developers
+// Copyright (c) 2021-2024 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -442,7 +442,7 @@ func loadConfig() (*vspdConfig, error) {
 		}
 
 		// Create new database.
-		err = database.CreateNew(cfg.dbPath, cfg.FeeXPub, cfg.logger(" DB"))
+		err = database.CreateNew(cfg.dbPath, cfg.FeeXPub)
 		if err != nil {
 			return nil, fmt.Errorf("error creating db file %s: %w", cfg.dbPath, err)
 		}

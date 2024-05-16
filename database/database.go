@@ -92,9 +92,7 @@ func (vdb *VspDatabase) WriteHotBackupFile() error {
 // - the provided extended pubkey (to be used for deriving fee addresses).
 // - an ed25519 keypair to sign API responses.
 // - a secret key to use for initializing a HTTP cookie store.
-func CreateNew(dbFile, feeXPub string, log slog.Logger) error {
-	log.Infof("Initializing new database at %s", dbFile)
-
+func CreateNew(dbFile, feeXPub string) error {
 	db, err := bolt.Open(dbFile, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return fmt.Errorf("unable to open db file: %w", err)
@@ -115,8 +113,6 @@ func CreateNew(dbFile, feeXPub string, log slog.Logger) error {
 			return err
 		}
 
-		log.Info("Generating ed25519 signing key")
-
 		// Generate ed25519 key
 		_, signKey, err := ed25519.GenerateKey(rand.Reader)
 		if err != nil {
@@ -128,7 +124,6 @@ func CreateNew(dbFile, feeXPub string, log slog.Logger) error {
 		}
 
 		// Generate a secret key for initializing the cookie store.
-		log.Info("Generating cookie secret")
 		secret := make([]byte, 32)
 		_, err = rand.Read(secret)
 		if err != nil {
@@ -139,7 +134,6 @@ func CreateNew(dbFile, feeXPub string, log slog.Logger) error {
 			return err
 		}
 
-		log.Info("Storing extended public key")
 		// Store fee xpub
 		err = vspBkt.Put(feeXPubK, []byte(feeXPub))
 		if err != nil {
@@ -164,8 +158,6 @@ func CreateNew(dbFile, feeXPub string, log slog.Logger) error {
 	if err != nil {
 		return err
 	}
-
-	log.Info("Database initialized")
 
 	return nil
 }
