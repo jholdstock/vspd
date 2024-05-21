@@ -100,6 +100,12 @@ func run() int {
 		log.Warnf("")
 	}
 
+	if cfg.FeeXPub != "" {
+		log.Warnf("")
+		log.Warnf("\tWARNING: Config --feexpub is set. This behavior has been moved into vspadmin and will be removed from vspd in a future release")
+		log.Warnf("")
+	}
+
 	// Open database.
 	db, err := database.Open(cfg.dbPath, makeLogger(" DB"), maxVoteChangeRecords)
 	if err != nil {

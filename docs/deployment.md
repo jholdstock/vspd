@@ -96,15 +96,15 @@ vspd. **Do not run a voting wallet on your webserver.**
    config file to set your dcrd and dcrwallet connection details, and any other
    required customization.
 
-1. A vspd database must be initialized before vpsd can be started. To do this,
-   provide vspd with the xpub key it should use for collecting fees:
+1. A vspd database must be initialized before vpsd can be started. This is
+   acheived using a tool named [vspadmin](./cmd/vspadmin) which must be provided
+   with xpub key to be used for collecting fees:
 
     ```no-highlight
-    $ vspd --feexpub=tpubVppjaMjp8GEW...
+    $ go run ./cmd/vspadmin createdatabase tpubVppjaMjp8GEW...
     ```
 
-1. Once the database is initialized, vspd can be started for normal operation by
-   running it without the `--feexpub` flag.
+1. Once the database is initialized, vspd can be started for normal operation.
 
 1. Configure nginx with SSL and set up reverse proxy to forward requests to the
    vspd process. nginx must also set the `X-Forwarded-For` header to make vspd
