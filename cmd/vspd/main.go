@@ -37,8 +37,8 @@ func main() {
 // initLogging uses the provided vspd config to create a logging backend, and
 // returns a function which can be used to create ready-to-use subsystem
 // loggers.
-func initLogging(cfg *vspdConfig) (func(subsystem string) slog.Logger, error) {
-	backend, err := newLogBackend(cfg.logPath, "vspd", cfg.MaxLogSize, cfg.LogsToKeep)
+func initLogging(cfg *vspd.Config) (func(subsystem string) slog.Logger, error) {
+	backend, err := newLogBackend(cfg.LogPath, "vspd", cfg.MaxLogSize, cfg.LogsToKeep)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize logger: %w", err)
 	}
@@ -60,7 +60,7 @@ func initLogging(cfg *vspdConfig) (func(subsystem string) slog.Logger, error) {
 // fact that deferred functions do not run when os.Exit() is called.
 func run() int {
 	// Load config file and parse CLI args.
-	cfg, err := loadConfig()
+	cfg, err := vspd.LoadConfig()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "loadConfig error: %v\n", err)
 		return 1
@@ -82,7 +82,7 @@ func run() int {
 	log.Criticalf("Version %s (Go version %s %s/%s)", version.String(),
 		runtime.Version(), runtime.GOOS, runtime.GOARCH)
 
-	if cfg.network == &config.MainNet && version.IsPreRelease() {
+	if cfg.Network == &config.MainNet && version.IsPreRelease() {
 		log.Warnf("")
 		log.Warnf("\tWARNING: This is a pre-release version of vspd which should not be used on mainnet")
 		log.Warnf("")
@@ -107,7 +107,7 @@ func run() int {
 	}
 
 	// Open database.
-	db, err := database.Open(cfg.dbPath, makeLogger(" DB"), maxVoteChangeRecords)
+	db, err := database.Open(cfg.DbPath, makeLogger(" DB"), maxVoteChangeRecords)
 	if err != nil {
 		log.Errorf("Failed to open database: %v", err)
 		return 1
@@ -122,18 +122,18 @@ func run() int {
 
 	// Create RPC client for local dcrd instance (used for broadcasting and
 	// checking the status of fee transactions).
-	dcrd := rpc.SetupDcrd(cfg.DcrdUser, cfg.DcrdPass, cfg.DcrdHost, cfg.dcrdCert, cfg.network.Params, rpcLog, blockNotifChan)
+	dcrd := rpc.SetupDcrd(cfg.DcrdUser, cfg.DcrdPass, cfg.DcrdHost, cfg.DcrdCert2, cfg.Network.Params, rpcLog, blockNotifChan)
 	defer dcrd.Close()
 
 	// Create RPC client for remote dcrwallet instances (used for voting).
-	wallets := rpc.SetupWallet(cfg.walletUsers, cfg.walletPasswords, cfg.walletHosts, cfg.walletCerts, cfg.network.Params, rpcLog)
+	wallets := rpc.SetupWallet(cfg.WalletUsers2, cfg.WalletPasswords2, cfg.WalletHosts2, cfg.WalletCerts2, cfg.Network.Params, rpcLog)
 	defer wallets.Close()
 
 	// Create webapi server.
 	apiCfg := webapi.Config{
 		Listen:               cfg.Listen,
 		VSPFee:               cfg.VSPFee,
-		Network:              cfg.network,
+		Network:              cfg.Network,
 		SupportEmail:         cfg.SupportEmail,
 		VspClosed:            cfg.VspClosed,
 		VspClosedMsg:         cfg.VspClosedMsg,
@@ -160,7 +160,7 @@ func run() int {
 	}()
 
 	// Start vspd.
-	vspd := vspd.New(cfg.network, log, db, dcrd, wallets, blockNotifChan)
+	vspd := vspd.New(cfg.Network, log, db, dcrd, wallets, blockNotifChan)
 	wg.Add(1)
 	go func() {
 		vspd.Run(ctx)

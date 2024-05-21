@@ -2,7 +2,7 @@
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
-package main
+package vspd
 
 import (
 	"errors"
@@ -27,8 +27,8 @@ const (
 	dbFilename     = "vspd.db"
 )
 
-// vspdConfig defines the configuration options for the vspd process.
-type vspdConfig struct {
+// Config defines the configuration options for the vspd process.
+type Config struct {
 	Listen          string        `long:"listen" ini-name:"listen" description:"The ip:port to listen for API requests."`
 	LogLevel        string        `long:"loglevel" ini-name:"loglevel" description:"Logging level." choice:"trace" choice:"debug" choice:"info" choice:"warn" choice:"error" choice:"critical"`
 	MaxLogSize      int64         `long:"maxlogsize" ini-name:"maxlogsize" description:"File size threshold for log file rotation (MB)."`
@@ -57,15 +57,15 @@ type vspdConfig struct {
 	HomeDir     string `long:"homedir" no-ini:"true" description:"Path to application home directory. Used for storing VSP database and logs."`
 	ConfigFile  string `long:"configfile" no-ini:"true" description:"DEPRECATED: This behavior is no longer available and this option will be removed in a future version of the software."`
 
-	logPath                                   string
-	dbPath                                    string
-	network                                   *config.Network
-	dcrdCert                                  []byte
-	walletHosts, walletUsers, walletPasswords []string
-	walletCerts                               [][]byte
+	LogPath                                      string
+	DbPath                                       string
+	Network                                      *config.Network
+	DcrdCert2                                    []byte
+	WalletHosts2, WalletUsers2, WalletPasswords2 []string
+	WalletCerts2                                 [][]byte
 }
 
-var defaultConfig = vspdConfig{
+var DefaultConfig = Config{
 	Listen:         ":8800",
 	LogLevel:       "debug",
 	MaxLogSize:     int64(10),
@@ -153,7 +153,7 @@ func normalizeAddress(addr, defaultPort string) string {
 	return addr
 }
 
-// loadConfig initializes and parses the config using a config file and command
+// LoadConfig initializes and parses the config using a config file and command
 // line options.
 //
 // The configuration proceeds as follows:
@@ -165,8 +165,8 @@ func normalizeAddress(addr, defaultPort string) string {
 // The above results in vspd functioning properly without any config settings
 // while still allowing the user to override settings with config files and
 // command line options.  Command line options always take precedence.
-func loadConfig() (*vspdConfig, error) {
-	cfg := defaultConfig
+func LoadConfig() (*Config, error) {
+	cfg := DefaultConfig
 
 	// If command line options are requesting help, write it to stdout and exit.
 	if config.WriteHelp(&cfg) {
@@ -242,7 +242,7 @@ func loadConfig() (*vspdConfig, error) {
 	}
 
 	// Set the active network.
-	cfg.network, err = config.NetworkFromName(cfg.NetworkName)
+	cfg.Network, err = config.NetworkFromName(cfg.NetworkName)
 	if err != nil {
 		return nil, err
 	}
@@ -297,7 +297,7 @@ func loadConfig() (*vspdConfig, error) {
 
 	// Load dcrd RPC certificate.
 	cfg.DcrdCert = cleanAndExpandPath(cfg.DcrdCert)
-	cfg.dcrdCert, err = os.ReadFile(cfg.DcrdCert)
+	cfg.DcrdCert2, err = os.ReadFile(cfg.DcrdCert)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read dcrd cert file: %w", err)
 	}
@@ -318,20 +318,20 @@ func loadConfig() (*vspdConfig, error) {
 	}
 
 	// Parse list of wallet hosts.
-	cfg.walletHosts = strings.Split(cfg.WalletHosts, ",")
-	numHost := len(cfg.walletHosts)
+	cfg.WalletHosts2 = strings.Split(cfg.WalletHosts, ",")
+	numHost := len(cfg.WalletHosts2)
 
 	// An RPC username must be specified for each wallet host.
-	cfg.walletUsers = strings.Split(cfg.WalletUsers, ",")
-	numUser := len(cfg.walletUsers)
+	cfg.WalletUsers2 = strings.Split(cfg.WalletUsers, ",")
+	numUser := len(cfg.WalletUsers2)
 	if numUser != numHost {
 		return nil, fmt.Errorf("%d wallet hosts specified, expected %d RPC usernames, got %d",
 			numHost, numHost, numUser)
 	}
 
 	// An RPC password must be specified for each wallet host.
-	cfg.walletPasswords = strings.Split(cfg.WalletPasswords, ",")
-	numPass := len(cfg.walletPasswords)
+	cfg.WalletPasswords2 = strings.Split(cfg.WalletPasswords, ",")
+	numPass := len(cfg.WalletPasswords2)
 	if numPass != numHost {
 		return nil, fmt.Errorf("%d wallet hosts specified, expected %d RPC passwords, got %d",
 			numHost, numHost, numPass)
@@ -346,36 +346,36 @@ func loadConfig() (*vspdConfig, error) {
 	}
 
 	// Load dcrwallet RPC certificate(s).
-	cfg.walletCerts = make([][]byte, numCert)
+	cfg.WalletCerts2 = make([][]byte, numCert)
 	for i := 0; i < numCert; i++ {
 		certs[i] = cleanAndExpandPath(certs[i])
-		cfg.walletCerts[i], err = os.ReadFile(certs[i])
+		cfg.WalletCerts2[i], err = os.ReadFile(certs[i])
 		if err != nil {
 			return nil, fmt.Errorf("failed to read dcrwallet cert file: %w", err)
 		}
 	}
 
 	// Verify minimum number of voting wallets are configured.
-	if numHost < cfg.network.MinWallets {
+	if numHost < cfg.Network.MinWallets {
 		return nil, fmt.Errorf("minimum required voting wallets has not been met: %d < %d",
-			numHost, cfg.network.MinWallets)
+			numHost, cfg.Network.MinWallets)
 	}
 
 	// Add default port for the active network if there is no port specified.
 	for i := 0; i < numHost; i++ {
-		cfg.walletHosts[i] = normalizeAddress(cfg.walletHosts[i], cfg.network.WalletRPCServerPort)
+		cfg.WalletHosts2[i] = normalizeAddress(cfg.WalletHosts2[i], cfg.Network.WalletRPCServerPort)
 	}
-	cfg.DcrdHost = normalizeAddress(cfg.DcrdHost, cfg.network.DcrdRPCServerPort)
+	cfg.DcrdHost = normalizeAddress(cfg.DcrdHost, cfg.Network.DcrdRPCServerPort)
 
 	// Set the log path.
-	cfg.logPath = filepath.Join(cfg.HomeDir, "logs", cfg.network.Name)
+	cfg.LogPath = filepath.Join(cfg.HomeDir, "logs", cfg.Network.Name)
 
 	// Set the database path.
-	dataDir := filepath.Join(cfg.HomeDir, "data", cfg.network.Name)
-	cfg.dbPath = filepath.Join(dataDir, dbFilename)
+	dataDir := filepath.Join(cfg.HomeDir, "data", cfg.Network.Name)
+	cfg.DbPath = filepath.Join(dataDir, dbFilename)
 
 	// If database does not exist, return error.
-	if !fileExists(cfg.dbPath) {
+	if !fileExists(cfg.DbPath) {
 		return nil, fmt.Errorf("no database exists in %s. A new database can"+
 			" be created with vspadmin", dataDir)
 	}
