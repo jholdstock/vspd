@@ -1,3 +1,8 @@
 # vspadmin
 
-TODO
+Flags
+
+Commands
+    createdatabase <xpub>
+    writeconfig
+
