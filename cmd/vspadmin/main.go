@@ -13,11 +13,13 @@ import (
 	"github.com/decred/dcrd/hdkeychain/v3"
 	"github.com/decred/vspd/database"
 	"github.com/decred/vspd/internal/config"
+	"github.com/decred/vspd/internal/vspd"
 	"github.com/jessevdk/go-flags"
 )
 
 const (
-	dbFilename = "vspd.db"
+	configFilename = "vspd.conf"
+	dbFilename     = "vspd.db"
 )
 
 type conf struct {
@@ -70,6 +72,38 @@ func createDatabase(homeDir string, feeXPub string, network *config.Network) err
 		return fmt.Errorf("error creating db file %s: %w", dbFile, err)
 	}
 
+	log("New %s vspd database created in %s", network.Name, homeDir)
+
+	return nil
+}
+
+func writeConfig(homeDir string) error {
+	configFile := filepath.Join(homeDir, configFilename)
+
+	// Return an error if the config file already exists.
+	if fileExists(configFile) {
+		return fmt.Errorf("config file already exists in %s", homeDir)
+	}
+
+	// Ensure the directory exists.
+	err := os.MkdirAll(homeDir, 0700)
+	if err != nil {
+		return fmt.Errorf("failed to create directory: %w", err)
+	}
+
+	// Write a config file with default values to the provided home directory.
+	preParser := flags.NewParser(&vspd.DefaultConfig, flags.None)
+	preIni := flags.NewIniParser(preParser)
+	err = preIni.WriteFile(configFile,
+		flags.IniIncludeComments|flags.IniIncludeDefaults)
+	if err != nil {
+		return fmt.Errorf("error creating a default "+
+			"config file: %w", err)
+	}
+
+	log("Config file with default values written to %s", configFile)
+	log("Fill in the blanks")
+
 	return nil
 }
 
@@ -116,13 +150,19 @@ func run() int {
 			return 1
 		}
 
-		log("New %s vspd database created in %s", cfg.Network, cfg.HomeDir)
-		return 0
+	case "writeconfig":
+		err = writeConfig(cfg.HomeDir)
+		if err != nil {
+			log("writeconfig: %v", err)
+			return 1
+		}
 
 	default:
 		log("%q is not a valid command", remainingArgs[0])
 		return 1
 	}
+
+	return 0
 }
 
 func main() {

@@ -92,13 +92,16 @@ vspd. **Do not run a voting wallet on your webserver.**
    receiving `blockconnected` notifications, and for broadcasting and checking
    the status of fee transactions.
 
-1. Run `vspd` with no arguments to write a default config file. Modify the
-   config file to set your dcrd and dcrwallet connection details, and any other
-   required customization.
+1. Use [vspadmin](./cmd/vspadmin) to write a config file containing default
+   values. Modify the config file to set your dcrd and dcrwallet connection
+   details, and any other required customization.
 
-1. A vspd database must be initialized before vpsd can be started. This is
-   acheived using a tool named [vspadmin](./cmd/vspadmin) which must be provided
-   with xpub key to be used for collecting fees:
+   ```no-highlight
+    $ go run ./cmd/vspadmin writeconfig
+    ```
+
+1. Use [vspadmin](./cmd/vspadmin) to initialized a vpsd databse. The xpub key to
+   be used for collecting fees must be passed in as an argument.
 
     ```no-highlight
     $ go run ./cmd/vspadmin createdatabase tpubVppjaMjp8GEW...

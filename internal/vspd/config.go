@@ -208,25 +208,14 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	// Create a default config file when one does not exist and the user did
-	// not specify an override.
+	// Load additional config from file.
 	configFile := filepath.Join(cfg.HomeDir, configFilename)
 	if !fileExists(configFile) {
-		preIni := flags.NewIniParser(preParser)
-		err = preIni.WriteFile(configFile,
-			flags.IniIncludeComments|flags.IniIncludeDefaults)
-		if err != nil {
-			return nil, fmt.Errorf("error creating a default "+
-				"config file: %w", err)
-		}
-		fmt.Printf("Config file with default values written to %s\n", configFile)
-
-		// File created, user now has to fill in values. Proceeding with the
-		// default file just causes errors.
-		os.Exit(0)
+		err := fmt.Errorf("config file does not exist at %s", configFile)
+		fmt.Fprintln(os.Stderr, err)
+		return nil, err
 	}
 
-	// Load additional config from file.
 	parser := flags.NewParser(&cfg, flags.None)
 
 	err = flags.NewIniParser(parser).ParseFile(configFile)
