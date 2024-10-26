@@ -2,23 +2,33 @@
 
   </div> <!-- page-content -->
 
-  <footer class="row m-0">
-        <div class="col-md-8 col-12 d-flex justify-content-center align-items-center">
-            <p class="py-4 m-0">
-              <strong>Stats&nbsp;updated:</strong>&nbsp;{{ timeAgo .WebApiCache.UpdateTime }}
-              <br />
-              <strong>Support:</strong>&nbsp;<a href="mailto:{{ .WebApiCfg.SupportEmail }}" rel="noopener noreferrer">{{ .WebApiCfg.SupportEmail }}</a>
-              <br />
-              <strong>VSP&nbsp;public&nbsp;key:</strong>&nbsp;<span class="code">{{ .WebApiCache.PubKey }}</span>
-            </p>
+  <footer class="vsp-footer">
+        <div class="vsp-footer-left col-md-8 col-12">
+            <div class="py-4 m-0">
+              <div>
+                <span class="vsp-footer-label">Stats updated:</span>
+                <span class="vsp-footer-value">{{ timeAgo .WebApiCache.UpdateTime }}</span>
+              </div>
+              <div>
+                <span class="vsp-footer-label">Support:</span>
+                <span class="vsp-footer-value"><a href="mailto:{{ .WebApiCfg.SupportEmail }}" rel="noopener noreferrer">{{ .WebApiCfg.SupportEmail }}</a></span>
+              </div>
+              <div>
+                <span class="vsp-footer-label">VSP public key:</span>
+                <span class="vsp-footer-value code">{{ .WebApiCache.PubKey }}</span>
+              </div>
+            </div>
         </div>
 
-        <div class="col-md-4 col-12 footer__credit d-flex justify-content-center align-items-center">
-            <p class="py-4 m-0">
-                Decred Developers | 2020-2024
-                <br />
-                The source code is available on <a href="https://github.com/decred/vspd" target="_blank" rel="noopener noreferrer">GitHub</a>
-            </p>
+        <div class="vsp-footer-right col-md-4 col-12 text-center text-md-right">
+            <div class="py-4 m-0">
+                <div>
+                  Decred Developers | 2020-2024
+                </div>
+                <div>
+                  The source code is available on <a href="https://github.com/decred/vspd" target="_blank" rel="noopener noreferrer">GitHub</a>
+                </div>
+            </div>
         </div>
   </footer>
 

@@ -68,28 +68,39 @@ input[type="search"] {
     color: #ed6d47;
 }
 
-footer {
+.vsp-footer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     flex-shrink: 0;
+    margin: 0;
     font-size: 0.8rem;
     background-color: #091440;
     color: #8997a5;
     width: 100%;
+    white-space: nowrap;
+    word-break: break-all;
 }
 
-footer .code {
-    word-break: break-word;
+.vsp-footer .vsp-footer-left,
+.vsp-footer .vsp-footer-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-.footer__credit {
+.vsp-footer .vsp-footer-right {
     background-color: rgba(237,239,241,.1);
-    text-align: right;
     color: #8997a5;
 }
 
-@media (max-width: 768px) {
-  .footer__credit {
-        text-align: center;
-    }
+.vsp-footer .vsp-footer-label {
+    font-weight: bold;
+}
+
+.vsp-footer .vsp-footer-value {
+    white-space: normal;
 }
 
 .btn-primary, .btn-secondary {
