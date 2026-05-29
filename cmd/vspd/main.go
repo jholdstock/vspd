@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 The Decred developers
+// Copyright (c) 2020-2026 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -158,27 +158,21 @@ func run() int {
 	var wg sync.WaitGroup
 
 	// Start the webapi server.
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		api.Run(ctx)
-		wg.Done()
-	}()
+	})
 
 	// Start vspd.
 	vspd := vspd.New(network, log, db, dcrd, wallets, blockNotifChan)
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		vspd.Run(ctx)
-		wg.Done()
-	}()
+	})
 
 	// Periodically write a database backup file.
-	wg.Add(1)
-	go func() {
+	wg.Go(func() {
 		for {
 			select {
 			case <-ctx.Done():
-				wg.Done()
 				return
 			case <-time.After(cfg.BackupInterval):
 				err := db.WriteHotBackupFile()
@@ -187,7 +181,7 @@ func run() int {
 				}
 			}
 		}
-	}()
+	})
 
 	// Wait for shutdown tasks to complete before running deferred tasks and
 	// returning.
