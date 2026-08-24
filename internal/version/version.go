@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025 The Decred developers
+// Copyright (c) 2020-2026 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -18,7 +18,7 @@ const semverAlphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 // Constants defining the application version number.
 const (
 	major = 1
-	minor = 5
+	minor = 6
 	patch = 0
 )
 
