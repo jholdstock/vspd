@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023 The Decred developers
+// Copyright (c) 2020-2026 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -17,10 +17,6 @@ import (
 )
 
 const (
-	// requiredConfs is the number of confirmations required to consider a
-	// ticket purchase or a fee transaction to be final.
-	requiredConfs = 6
-
 	// consistencyInterval is the time period between wallet consistency checks.
 	consistencyInterval = 30 * time.Minute
 

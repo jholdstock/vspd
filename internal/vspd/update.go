@@ -106,7 +106,7 @@ func (v *Vspd) updateUnconfirmed(ctx context.Context, dcrdClient *rpc.DcrdRPC) {
 			continue
 		}
 
-		if tktTx.Confirmations >= requiredConfs {
+		if tktTx.Confirmations >= v.network.RequiredConfs {
 			ticket.PurchaseHeight = tktTx.BlockHeight
 			ticket.Confirmed = true
 			err = v.db.UpdateTicket(ticket)
@@ -196,7 +196,7 @@ func (v *Vspd) addToWallets(ctx context.Context, dcrdClient *rpc.DcrdRPC) {
 
 		// If fee is confirmed, update the database and add ticket to voting
 		// wallets.
-		if feeTx.Confirmations >= requiredConfs {
+		if feeTx.Confirmations >= v.network.RequiredConfs {
 			// We no longer need the hex once the tx is confirmed on-chain.
 			ticket.FeeTxHex = ""
 			ticket.FeeTxStatus = database.FeeConfirmed

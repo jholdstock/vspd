@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025 The Decred developers
+// Copyright (c) 2021-2026 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -186,7 +186,7 @@ func (w *WebAPI) feeAddress(c *gin.Context) {
 	// purchase height may change due to reorgs.
 	confirmed := false
 	purchaseHeight := int64(0)
-	if rawTicket.Confirmations >= requiredConfs {
+	if rawTicket.Confirmations >= w.cfg.Network.RequiredConfs {
 		confirmed = true
 		purchaseHeight = rawTicket.BlockHeight
 	}

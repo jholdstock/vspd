@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024 The Decred developers
+// Copyright (c) 2020-2026 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -19,6 +19,9 @@ type Network struct {
 	// deployment on this network. vspd will log an error and refuse to start if
 	// fewer wallets are configured.
 	MinWallets int
+	// RequiredConfs is the number of confirmations required to consider a
+	// ticket purchase or a fee transaction to be final.
+	RequiredConfs int64
 	// DCP0005Height is the activation height of DCP-0005 block header
 	// commitments agenda on this network.
 	DCP0005Height int64
@@ -36,6 +39,7 @@ var MainNet = Network{
 	WalletRPCServerPort: "9110",
 	BlockExplorerURL:    "https://dcrdata.decred.org",
 	MinWallets:          3,
+	RequiredConfs:       6,
 	// DCP0005Height on mainnet is block
 	// 000000000000000010815bed2c4dc431c34a859f4fc70774223dde788e95a01e.
 	DCP0005Height: 431488,
@@ -53,6 +57,7 @@ var TestNet3 = Network{
 	WalletRPCServerPort: "19110",
 	BlockExplorerURL:    "https://testnet.dcrdata.org",
 	MinWallets:          1,
+	RequiredConfs:       2,
 	// DCP0005Height on testnet3 is block
 	// 0000003e54421d585f4a609393a8694509af98f62b8449f245b09fe1389f8f77.
 	DCP0005Height: 323328,
@@ -70,6 +75,7 @@ var SimNet = Network{
 	WalletRPCServerPort: "19557",
 	BlockExplorerURL:    "...",
 	MinWallets:          1,
+	RequiredConfs:       2,
 	// DCP0005Height on simnet is 1 because the agenda will always be active.
 	DCP0005Height: 1,
 	// DCP0010Height on simnet is 1 because the agenda will always be active.
