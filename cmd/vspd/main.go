@@ -144,6 +144,7 @@ func run() int {
 		VspClosedMsg:         cfg.VspClosedMsg,
 		AdminPass:            cfg.AdminPass,
 		Debug:                cfg.WebServerDebug,
+		EmbedWebAssets:       !cfg.DontEmbedAssets,
 		Designation:          cfg.Designation,
 		MaxVoteChangeRecords: maxVoteChangeRecords,
 		VspdVersion:          version.String(),

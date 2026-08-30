@@ -8,13 +8,16 @@ import (
 	"context"
 	"crypto/ed25519"
 	"crypto/sha256"
+	"embed"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"net"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -28,6 +31,12 @@ import (
 	"github.com/gorilla/sessions"
 )
 
+//go:embed templates
+var embeddedTmplFS embed.FS
+
+//go:embed public
+var embeddedPublicFS embed.FS
+
 type Config struct {
 	Listen               string
 	VSPFee               float64
@@ -38,6 +47,7 @@ type Config struct {
 	VspClosedMsg         string
 	AdminPass            string
 	Debug                bool
+	EmbedWebAssets       bool
 	Designation          string
 	MaxVoteChangeRecords int
 	VspdVersion          string
@@ -190,6 +200,36 @@ func (w *WebAPI) Run(ctx context.Context) {
 	wg.Wait()
 }
 
+// assetFS returns filesystems from which to load public web assets and HTML
+// template files. The files are either loaded from embed or from the source dir
+// depending on config.
+func (w *WebAPI) assetFS() (http.FileSystem, http.FileSystem) {
+	useEmbedded := w.cfg.EmbedWebAssets
+
+	// Always load assets from disk when debug is enabled.
+	if w.cfg.Debug {
+		useEmbedded = false
+	}
+
+	var publicFS, tmplFS fs.FS
+	if useEmbedded {
+		tmplFS = embeddedTmplFS
+		publicFS = embeddedPublicFS
+		w.log.Debug("Using embedded web assets")
+	} else {
+		const sourceDir = "./internal/webapi"
+		tmplFS = os.DirFS(sourceDir)
+		publicFS = os.DirFS(sourceDir)
+		w.log.Debugf("Using web assets from %q", sourceDir)
+	}
+
+	// Errors can be ignored because params are hard-coded.
+	tmplFS, _ = fs.Sub(tmplFS, "templates")
+	publicFS, _ = fs.Sub(publicFS, "public")
+
+	return http.FS(publicFS), http.FS(tmplFS)
+}
+
 func (w *WebAPI) router(cookieSecret []byte, dcrd rpc.DcrdConnect, wallets rpc.WalletConnect) *gin.Engine {
 	// With release mode enabled, gin will only read template files once and cache them.
 	// With release mode disabled, templates will be reloaded on the fly.
@@ -217,7 +257,9 @@ func (w *WebAPI) router(cookieSecret []byte, dcrd rpc.DcrdConnect, wallets rpc.W
 		"pluralize":        pluralize,
 	})
 
-	router.LoadHTMLGlob("internal/webapi/templates/*.html")
+	publicFS, tmplFS := w.assetFS()
+
+	router.LoadHTMLFS(tmplFS, "*.html")
 
 	// Recovery middleware handles any go panics generated while processing web
 	// requests. Ensures a 500 response is sent to the client rather than
@@ -232,8 +274,8 @@ func (w *WebAPI) router(cookieSecret []byte, dcrd rpc.DcrdConnect, wallets rpc.W
 
 	router.Use(w.csrf())
 
-	// Serve static web resources
-	router.Static("/public", "internal/webapi/public/")
+	// Serve static web resources.
+	router.StaticFS("/public", publicFS)
 
 	// Create a cookie store for persisting admin session information.
 	cookieStore := sessions.NewCookieStore(cookieSecret)

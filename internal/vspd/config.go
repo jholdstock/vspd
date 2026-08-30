@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024 The Decred developers
+// Copyright (c) 2021-2026 The Decred developers
 // Use of this source code is governed by an ISC
 // license that can be found in the LICENSE file.
 
@@ -43,7 +43,8 @@ type Config struct {
 	WalletUsers     string        `long:"walletuser" ini-name:"walletuser" description:"Comma separated list of username for dcrwallet RPC connections."`
 	WalletPasswords string        `long:"walletpass" ini-name:"walletpass" description:"Comma separated list of password for dcrwallet RPC connections."`
 	WalletCerts     string        `long:"walletcert" ini-name:"walletcert" description:"Comma separated list of dcrwallet RPC certificate files."`
-	WebServerDebug  bool          `long:"webserverdebug" ini-name:"webserverdebug" description:"Enable web server debug mode (verbose logging to terminal and live-reloading templates)."`
+	WebServerDebug  bool          `long:"webserverdebug" ini-name:"webserverdebug" description:"Enable web server debug mode (verbose logging to terminal and live-reloading web assets)."`
+	DontEmbedAssets bool          `long:"dontembedassets" ini-name:"dontembedassets" description:"Load web assets from source dir instead of using embedded versions."`
 	SupportEmail    string        `long:"supportemail" ini-name:"supportemail" description:"Email address for users in need of support."`
 	BackupInterval  time.Duration `long:"backupinterval" ini-name:"backupinterval" description:"Time period between automatic database backups. Valid time units are {s,m,h}. Minimum 30 seconds."`
 	VspClosed       bool          `long:"vspclosed" ini-name:"vspclosed" description:"Closed prevents the VSP from accepting new tickets."`
@@ -98,19 +99,20 @@ func (cfg *Config) WalletDetails() *WalletDetails {
 }
 
 var DefaultConfig = Config{
-	Listen:         ":8800",
-	LogLevel:       "debug",
-	MaxLogSize:     int64(10),
-	LogsToKeep:     20,
-	NetworkName:    "testnet",
-	VSPFee:         3.0,
-	HomeDir:        dcrutil.AppDataDir("vspd", false),
-	DcrdHost:       "127.0.0.1",
-	WalletHosts:    "127.0.0.1",
-	WebServerDebug: false,
-	BackupInterval: time.Minute * 3,
-	VspClosed:      false,
-	Designation:    "Voting Service Provider",
+	Listen:          ":8800",
+	LogLevel:        "debug",
+	MaxLogSize:      int64(10),
+	LogsToKeep:      20,
+	NetworkName:     "testnet",
+	VSPFee:          3.0,
+	HomeDir:         dcrutil.AppDataDir("vspd", false),
+	DcrdHost:        "127.0.0.1",
+	WalletHosts:     "127.0.0.1",
+	WebServerDebug:  false,
+	DontEmbedAssets: false,
+	BackupInterval:  time.Minute * 3,
+	VspClosed:       false,
+	Designation:     "Voting Service Provider",
 }
 
 // fileExists reports whether the named file or directory exists.
